@@ -418,24 +418,3 @@ elif page == "View History":
 # Footer
 st.markdown("---")
 st.markdown("⚠️ **Disclaimer:** This is for educational purposes only. Consult a professional financial advisor before making investment decisions.")
-Step 4: Initialize Git and Push to GitHub
-bash
-# Initialize git repository
-git init
-
-# Create .gitignore file
-echo "venv/
-__pycache__/
-*.pyc
-.DS_Store
-.streamlit/secrets.toml" > .gitignore
-
-# Add files
-git add app.py requirements.txt .gitignore
-git commit -m "Initial commit: AI Financial Advisor app"
-
-# Create repository on GitHub (do this through GitHub website)
-# Then connect and push
-git remote add origin https://github.com/YOUR_USERNAME/fintech-advisor.git
-git branch -M main
-git push -u origin main
