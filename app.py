@@ -36,13 +36,20 @@ if menu == "Dashboard":
     st.header("📊 Your Spending Dashboard")
     
     if len(st.session_state.expenses) > 0:
-        # Convert date column
-        st.session_state.expenses['date'] = pd.to_datetime(st.session_state.expenses['date'])
+        # Make a copy to avoid modifying the original
+        expenses_df = st.session_state.expenses.copy()
+        
+        # Convert date column with proper format handling
+        try:
+            expenses_df['date'] = pd.to_datetime(expenses_df['date'], format='%Y-%m-%d')
+        except (ValueError, TypeError):
+            # Fallback to mixed format if the specific format doesn't work
+            expenses_df['date'] = pd.to_datetime(expenses_df['date'], format='mixed')
         
         # Current month expenses
         current_month = datetime.now().strftime('%Y-%m')
-        monthly_data = st.session_state.expenses[
-            st.session_state.expenses['date'].dt.strftime('%Y-%m') == current_month
+        monthly_data = expenses_df[
+            expenses_df['date'].dt.strftime('%Y-%m') == current_month
         ]
         
         if len(monthly_data) > 0:
@@ -64,13 +71,13 @@ if menu == "Dashboard":
                 names=category_totals.index,
                 title="Where your money goes"
             )
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='stretch')
             
             # Show recent expenses
             st.subheader("Recent Expenses")
             st.dataframe(
                 monthly_data[['date', 'category', 'amount', 'description']].sort_values('date', ascending=False),
-                use_container_width=True
+                width='stretch'
             )
         else:
             st.info("No expenses recorded this month. Add some expenses to see insights!")
@@ -95,11 +102,11 @@ elif menu == "Add Expense":
             amount = st.number_input("Amount ($)", min_value=0.01, step=10.0)
             description = st.text_input("Description", placeholder="What did you spend on?")
         
-        submitted = st.form_submit_button("Save Expense", use_container_width=True)
+        submitted = st.form_submit_button("Save Expense", width='stretch')
         
         if submitted:
             new_expense = pd.DataFrame({
-                'date': [date],
+                'date': [date.strftime('%Y-%m-%d')],  # Store date as string in consistent format
                 'category': [category],
                 'amount': [amount],
                 'description': [description]
@@ -143,37 +150,37 @@ elif menu == "Investment Advice":
         st.subheader("💡 Recommended Investment Options")
         
         if risk_level == "Low":
-            st.info("""
+            st.info(f"""
             **Conservative Portfolio (Low Risk)**
             - 📊 **Allocation:** 50% Bonds, 30% Fixed Deposits, 20% Blue-chip Stocks
             - 📈 **Expected Return:** 6-8% per year
             - ⏱️ **Suggested Duration:** 1-3 years
-            - 💵 **Monthly Investment:** ${:,.2f}
+            - 💵 **Monthly Investment:** ${savings * 0.7:,.2f}
             
             **Why this works for you:** Low-risk investments protect your capital while providing steady growth.
-            """.format(savings * 0.7))
+            """)
             
         elif risk_level == "Medium":
-            st.info("""
+            st.info(f"""
             **Moderate Portfolio (Medium Risk)**
             - 📊 **Allocation:** 40% Index Funds, 30% Corporate Bonds, 30% Growth Stocks
             - 📈 **Expected Return:** 10-12% per year
             - ⏱️ **Suggested Duration:** 3-7 years
-            - 💵 **Monthly Investment:** ${:,.2f}
+            - 💵 **Monthly Investment:** ${savings * 0.7:,.2f}
             
             **Why this works for you:** Balanced approach offers good growth with moderate volatility.
-            """.format(savings * 0.7))
+            """)
             
         else:  # High risk
-            st.info("""
+            st.info(f"""
             **Aggressive Portfolio (High Risk)**
             - 📊 **Allocation:** 50% Growth Stocks, 30% Tech Stocks, 20% Emerging Markets
             - 📈 **Expected Return:** 15-20% per year
             - ⏱️ **Suggested Duration:** 5+ years
-            - 💵 **Monthly Investment:** ${:,.2f}
+            - 💵 **Monthly Investment:** ${savings * 0.7:,.2f}
             
             **Why this works for you:** Higher risk tolerance allows for potentially higher returns over time.
-            """.format(savings * 0.7))
+            """)
         
         # Calculate future value
         st.subheader("📊 Potential Growth Projection")
@@ -188,7 +195,6 @@ elif menu == "Investment Advice":
         monthly_investment = savings * 0.7
         monthly_rate = annual_return / 100 / 12
 
-        # check
         projection_years = st.slider("Project for (years)", 1, 20, 5)
         months = projection_years * 12
         
