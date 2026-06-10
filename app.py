@@ -187,7 +187,8 @@ elif menu == "Investment Advice":
         
         monthly_investment = savings * 0.7
         monthly_rate = annual_return / 100 / 12
-        
+
+        # check
         projection_years = st.slider("Project for (years)", 1, 20, 5)
         months = projection_years * 12
         
